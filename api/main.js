@@ -14,7 +14,7 @@ app.use(Express.json());
 app.use(Express.urlencoded( {extended: true} )); 
 
 let apiKey;
-fs.readFile('api.key', 'utf8', function (err,data) {
+fs.readFile('api.key', 'utf8', (err,data) => {
     if (err) {
         return console.log(err);
     }
