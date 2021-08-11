@@ -6,15 +6,17 @@
 
 import Express from "express";
 import fs from "fs";
+import path from "path";
 
 const app = Express();
 const port = 3000;
 
-app.use(Express.json());
+const outFileNameLength = 24;
+
 app.use(Express.urlencoded( {extended: true} )); 
 
 let apiKey;
-fs.readFile('api.key', 'utf8', (err,data) => {
+fs.readFile('apiKey.txt', 'utf8', (err,data) => {
     if (err) {
         return console.log(err);
     }
@@ -22,13 +24,34 @@ fs.readFile('api.key', 'utf8', (err,data) => {
     apiKey = data.toString();
 });
 
-app.post("/", (request, response) => {
+app.post("/test", (request, response) => {
     if(request.headers.key !== apiKey) {
-        response.send("Forbidden : API key is wrong");
+        response.status(403).send("Forbidden : API key is wrong");
         return;
     } 
 
-    response.send("success");
-})
+    let out = `out/${randomString(outFileNameLength)}.png`;
+    fs.copyFile("../output.png", out, () => {});
+
+    setTimeout(() => {
+        response.send(path.resolve(out));
+    }, 15)
+
+    setTimeout(() => {
+        fs.unlink(out, () => {})
+    }, 5000)
+});
+
+
+function randomString(length) {
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * 
+ charactersLength));
+   }
+   return result;
+}
 
 app.listen(port, () => console.log("API started on port " + port));
