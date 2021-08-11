@@ -5,16 +5,30 @@
 // USE A PRIVATE KEY FOR API REQUEST, because people can crash the bot spamming outside discord api requests
 
 import Express from "express";
+import fs from "fs";
 
 const app = Express();
 const port = 3000;
 
-app.post("/", (request, response) => {
-    response.send("hello world");
-})
+app.use(Express.json());
+app.use(Express.urlencoded( {extended: true} )); 
 
-app.get("/", (request, response) => {
-    response.send("API bot disacord");
+let apiKey;
+fs.readFile('api.key', 'utf8', function (err,data) {
+    if (err) {
+        return console.log(err);
+    }
+
+    apiKey = data.toString();
+});
+
+app.post("/", (request, response) => {
+    if(request.headers.key !== apiKey) {
+        response.send("Forbidden : API key is wrong");
+        return;
+    } 
+
+    response.send("success");
 })
 
 app.listen(port, () => console.log("API started on port " + port));
