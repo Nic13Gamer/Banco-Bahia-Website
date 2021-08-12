@@ -30,7 +30,7 @@ app.post("/:param", async (request, response) => {
     const param = request.params.param;
     
     try {
-        const file = require(`./tools/${param}.js`);
+        const file = require(`./modules/${param}.js`);
         file.run(request, response, randomString(randomStringLength));
     } catch (err) {
         response.status(404).send("API module not found: " + param);
