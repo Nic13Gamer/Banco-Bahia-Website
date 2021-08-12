@@ -7,6 +7,7 @@
 import Express from "express";
 import fs from "fs";
 import path from "path";
+import jimp from "jimp";
 
 const app = Express();
 const port = 3000;
@@ -22,20 +23,45 @@ fs.readFile('apiKey.txt', 'utf8', (err,data) => {
     apiKey = data.toString();
 });
 
-app.post("/:param", (request, response) => {
+app.post("/:param", async (request, response) => {
     if(request.headers.key !== apiKey) {
         response.status(403).send("Forbidden : API key is wrong");
         return;
     }
 
-    if(request.params.param !== "test") return;
+    const param = request.params.param;
+    
+    let out;
 
-    let out = `out/${randomString(outFileNameLength)}.png`;
-    fs.copyFile("../output.png", out, () => {});
+    switch(param) {
+        case "test": {
+            out = `out/${randomString(outFileNameLength)}.png`;
+            fs.copyFile("../output.png", out, () => {});
+
+            break;
+        }
+
+        case "img": {
+            const base = await jimp.read(request.body.msg);
+            const font = await jimp.loadFont("../arial.fnt");
+
+            base.print(font, 0, 0, "SUS");
+
+            out = `out/${randomString(outFileNameLength)}.png`;
+            base.write(out);
+
+            break;
+        }
+
+        default: {
+            response.status(404).send("Not found : " + param);
+            return;
+        }
+    }
 
     setTimeout(() => {
         response.send(path.resolve(out));
-    }, 15)
+    }, 10)
 
     setTimeout(() => {
         fs.unlink(out, () => {})
