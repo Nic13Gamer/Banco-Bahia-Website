@@ -17,18 +17,18 @@ app.use(Express.urlencoded( {extended: true} ));
 
 let apiKey;
 fs.readFile('apiKey.txt', 'utf8', (err,data) => {
-    if (err) {
-        return console.log(err);
-    }
+    if (err) return console.log(err);
 
     apiKey = data.toString();
 });
 
-app.post("/test", (request, response) => {
+app.post("/:param", (request, response) => {
     if(request.headers.key !== apiKey) {
         response.status(403).send("Forbidden : API key is wrong");
         return;
-    } 
+    }
+
+    if(request.params.param !== "test") return;
 
     let out = `out/${randomString(outFileNameLength)}.png`;
     fs.copyFile("../output.png", out, () => {});
