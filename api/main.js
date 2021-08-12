@@ -4,15 +4,13 @@
 
 // USE A PRIVATE KEY FOR API REQUEST, because people can crash the bot spamming outside discord api requests
 
-import Express from "express";
-import fs from "fs";
-import path from "path";
-import jimp from "jimp";
+const Express = require("express");
+const fs = require("fs");
 
 const app = Express();
 const port = 3000;
 
-const outFileNameLength = 24;
+const randomStringLength = 24;
 
 app.use(Express.urlencoded( {extended: true} )); 
 
@@ -25,59 +23,28 @@ fs.readFile('apiKey.txt', 'utf8', (err,data) => {
 
 app.post("/:param", async (request, response) => {
     if(request.headers.key !== apiKey) {
-        response.status(403).send("Forbidden : API key is wrong");
+        response.status(403).send("Forbidden: API key is wrong");
         return;
     }
 
     const param = request.params.param;
     
-    let out;
-
-    switch(param) {
-        case "test": {
-            out = `out/${randomString(outFileNameLength)}.png`;
-            fs.copyFile("../output.png", out, () => {});
-
-            break;
-        }
-
-        case "img": {
-            const base = await jimp.read(request.body.msg);
-            const font = await jimp.loadFont("../arial.fnt");
-
-            base.print(font, 0, 0, "SUS");
-
-            out = `out/${randomString(outFileNameLength)}.png`;
-            base.write(out);
-
-            break;
-        }
-
-        default: {
-            response.status(404).send("Not found : " + param);
-            return;
-        }
+    try {
+        const file = require(`./tools/${param}.js`);
+        file.run(request, response, randomString(randomStringLength));
+    } catch (err) {
+        response.status(404).send("API module not found: " + param);
     }
-
-    setTimeout(() => {
-        response.send(path.resolve(out));
-    }, 10)
-
-    setTimeout(() => {
-        fs.unlink(out, () => {})
-    }, 5000)
 });
-
 
 function randomString(length) {
     var result           = '';
     var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     var charactersLength = characters.length;
     for ( var i = 0; i < length; i++ ) {
-      result += characters.charAt(Math.floor(Math.random() * 
- charactersLength));
-   }
-   return result;
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
 }
 
 app.listen(port, () => console.log("API started on port " + port));
