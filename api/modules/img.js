@@ -8,7 +8,7 @@ module.exports.run = async (request, response, randomString) => {
 
     base.print(font, 0, 0, "SUS");
 
-    let out = `out/${randomString}.png`;
+    let out = `./out/${randomString}.png`;
     base.write(out);
 
     setTimeout(() => {

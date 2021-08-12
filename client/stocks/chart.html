@@ -18,7 +18,7 @@
 
         let data = [];
         dataParamStringArray.forEach(element => {
-            data.push(parseInt(element));
+            data.push(parseInt(element) * parseInt(urlParams.get("multiplier")));
         });
 
         let min = Math.min.apply(null, data) - 60;
