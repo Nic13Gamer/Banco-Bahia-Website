@@ -6,21 +6,10 @@ const port = 3000;
 
 const randomStringLength = 24;
 
-app.use(Express.urlencoded( {extended: true} )); 
-
-let apiKey;
-fs.readFile('apiKey.txt', 'utf8', (err,data) => {
-    if (err) return console.log(err);
-
-    apiKey = data.toString();
-});
+app.use(Express.urlencoded( {extended: true} ));
+app.use(verifyApiKey);
 
 app.post("/:param", async (request, response) => {
-    if(request.headers.key !== apiKey) {
-        response.status(403).send("Forbidden: API key is wrong");
-        return;
-    }
-
     const param = request.params.param;
     
     try {
@@ -30,6 +19,19 @@ app.post("/:param", async (request, response) => {
         response.status(404).send("API module not found: " + param);
     }
 });
+
+function verifyApiKey(request, response, next) {
+    fs.readFile('apiKey.txt', 'utf8', (err,data) => {
+        if (err) return console.log(err);
+
+        if(request.headers.key !== data.toString()) {
+            response.status(403).send("Forbidden: API key is wrong");
+            return;
+        }
+
+        next();
+    });
+}
 
 function randomString(length) {
     var result           = '';
