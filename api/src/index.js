@@ -1,3 +1,5 @@
+// code 500 for server error
+
 const Express = require("express");
 const fs = require("fs");
 
@@ -21,7 +23,7 @@ app.post("/:param", async (request, response) => {
 });
 
 function verifyApiKey(request, response, next) {
-    fs.readFile('apiKey.txt', 'utf8', (err,data) => {
+    fs.readFile('./apiKey.txt', 'utf8', (err,data) => {
         if (err) return console.log(err);
 
         if(request.headers.key !== data.toString()) {
