@@ -1,4 +1,5 @@
 // code 500 for server error
+// we can return a JSON using response.json({}); and then in C# project we can use Newtonsoft.JSON to deserialize it
 
 const Express = require("express");
 const fs = require("fs");
@@ -13,7 +14,7 @@ app.use(verifyApiKey);
 
 app.post("/:param", async (request, response) => {
     const param = request.params.param;
-    
+
     try {
         const file = require(`./modules/${param}.js`);
         file.run(request, response, randomString(randomStringLength));
