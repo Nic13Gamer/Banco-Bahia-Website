@@ -12,23 +12,23 @@ const randomStringLength = 24;
 app.use(Express.urlencoded( {extended: true} ));
 app.use(verifyApiKey);
 
-app.post("/:param", async (request, response) => {
-    const param = request.params.param;
+app.post("/:param", async (req, res) => {
+    const param = req.params.param;
 
     try {
         const file = require(`./modules/${param}.js`);
-        file.run(request, response, randomString(randomStringLength));
+        file.run(req, res, randomString(randomStringLength));
     } catch (err) {
-        response.status(404).send("API module not found: " + param);
+        res.status(404).send("API module not found: " + param);
     }
 });
 
-function verifyApiKey(request, response, next) {
+function verifyApiKey(req, res, next) {
     fs.readFile('./apiKey.txt', 'utf8', (err,data) => {
         if (err) return console.log(err);
 
-        if(request.headers.key !== data.toString()) {
-            response.status(403).send("Forbidden: API key is wrong");
+        if(req.headers.key !== data.toString()) {
+            res.status(403).send("Forbidden: API key is wrong");
             return;
         }
 
