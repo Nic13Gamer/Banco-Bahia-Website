@@ -3,40 +3,34 @@ const fs = require("fs");
 const path = require("path");
 
 module.exports.run = async (req, res, randomString) => {
-    const base = await jimp.read("../base.jpg");
+    const base = await jimp.read("./resources/profile/base.jpg");
+    const profilePicMask = await jimp.read("./resources/profile/mask.png");
+
     const font = await jimp.loadFont(jimp.FONT_SANS_128_BLACK);
     const fontSmall = await jimp.loadFont(jimp.FONT_SANS_64_BLACK);
 
-    const baseWidth = base.getWidth();
-    const baseHeight = base.getHeight();
+    jimp.read(req.body.profilePic)
+    .then(async profilePic => {
+        const username = req.body.username;
+        const money = parseInt(req.body.money);
 
-    const profilePic = await jimp.read(req.body.profilePic);
-    const username = req.body.username;
-    const money = parseInt(req.body.money);
+        profilePicMask.resize(profilePic.getWidth(), profilePic.getHeight());
+        profilePic.mask(profilePicMask, 0, 0);
 
-    base.composite(profilePic.resize(328, 328), baseWidth / 2 - profilePic.getWidth() / 2, 60);
-    base.print(font, 0, 0, {
-        text: username,
-        alignmentX: jimp.HORIZONTAL_ALIGN_CENTER,
-        alignmentY: jimp.VERTICAL_ALIGN_MIDDLE
-    }, baseWidth, 1000);
-    base.print(font, 0, 0, {
-        text: "$" + money,
-        alignmentX: jimp.HORIZONTAL_ALIGN_CENTER,
-        alignmentY: jimp.VERTICAL_ALIGN_MIDDLE
-    }, baseWidth, 1300);
-    base.print(fontSmall, 0, 0, {
-        text: "alpha",
-        alignmentX: jimp.HORIZONTAL_ALIGN_CENTER,
-        alignmentY: jimp.VERTICAL_ALIGN_MIDDLE
-    }, baseWidth, 2800);
+        base.composite(profilePic, 0, 0);
+        base.print(fontSmall, 0, profilePic.getHeight() + 30, username);
 
-    let out = `./out/profile_${randomString}.png`;
-    await base.writeAsync(out);
+        let out = `./out/profile_${randomString}.png`;
+        await base.writeAsync(out);
 
-    res.send(path.resolve(out));
+        res.send(path.resolve(out));
 
-    await setTimeout(() => {
-        fs.unlink(out, () => {})
-    }, 3000)
+        setTimeout(() => {
+            fs.unlink(out, () => { });
+        }, 3000)
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).send("Internal server error");
+    });
 };
